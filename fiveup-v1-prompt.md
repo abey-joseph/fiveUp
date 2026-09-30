@@ -1,7 +1,7 @@
 # FiveUp — v1 Build Spec
 
 > **This file is the single source of truth for FiveUp v1.** Any change request is applied here
-> first, then implemented. Current revision: **v1 + Change Request 1** (tracker timezone, one-time
+> first, then implemented. Current revision: **v1 + Change Request 1** (max daily score corrected to 74) (tracker timezone, one-time
 > backfill importer).
 
 You are building **FiveUp**, a small meal-tracking web app (PWA) for two people. Read this whole
@@ -73,7 +73,7 @@ points score and streaks keep her motivated.
 
 ### Maximum daily score
 
-`50 (meals) + 9 (snacks) + 10 (full-day) + 5 (streak) = 84`
+`50 (meals) + 9 (snacks) + 10 (full-day) + 5 (streak) = 74`
 
 ### Implementation rules
 
@@ -89,7 +89,7 @@ points score and streaks keep her motivated.
   defaults above in `src/lib/defaultSettings.ts` as a fallback if the settings doc is missing.
 - Write **Vitest unit tests** covering: empty day = 0, all meals, snack cap (2, 3, 5 snacks),
   full-day bonus, streak of 1/2/3/4, streak broken by a non-full day, missing days (no document)
-  count as non-full, max score = 84.
+  count as non-full, max score = 74.
 
 ---
 
@@ -209,7 +209,7 @@ encouraging tone. Bottom tab bar: **Today · History · Stats**.
   picker) so she can go to **any past day** and edit it. Future dates (in the tracker timezone) are
   not allowed. A "Back to today" chip appears when not on today. "Today" is today in the tracker
   timezone.
-- **Score ring:** the day's total score out of 84, with the breakdown underneath (meals / snacks /
+- **Score ring:** the day's total score out of 74 (i.e. `maxDailyScore(settings)`), with the breakdown underneath (meals / snacks /
   bonus / streak bonus).
 - **5 meal tiles** in fixed order. Tap to toggle done. Done tiles show a check and the logged time
   in the tracker timezone (e.g. "✓ 8:42 am"); if `at` is `null`, show just "✓". Show a small toast
@@ -360,7 +360,7 @@ README.md
 - [ ] Viewer can sign in and see everything live, but cannot change anything (UI disabled **and**
       rules reject writes).
 - [ ] Any other Google account sees the NoAccess screen and cannot read data.
-- [ ] Scores match the rules in section 3 exactly; max is 84; unit tests pass.
+- [ ] Scores match the rules in section 3 exactly; max is 74; unit tests pass.
 - [ ] Dates are always tracker-timezone dates (default `Pacific/Auckland`), even if the device
       timezone is different, and DST transitions are handled.
 - [ ] History calendar and Stats are correct for the loaded data.

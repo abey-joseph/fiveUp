@@ -185,10 +185,9 @@ describe('computeDayScore', () => {
     expect(computeDayScore('2026-09-18', {}, S)).toMatchObject({ total: 0, streak: 0 })
   })
 
-  it('max score = meals + capped snacks + full-day + streak bonus, and is reachable', () => {
-    // Spec §3: 50 (meals) + 9 (snacks) + 10 (full-day) + 5 (streak). Note: these sum to 74; the
-    // spec's stated total of 84 is pending confirmation from the owner.
-    expect(maxDailyScore(S)).toBe(50 + 9 + 10 + 5)
+  it('max score = 74 and is reachable', () => {
+    // Spec §3: 50 (meals) + 9 (snacks) + 10 (full-day) + 5 (streak)
+    expect(maxDailyScore(S)).toBe(74)
     const days = run('2026-09-18', [full(), full(), day('all', 10)])
     expect(computeDayScore('2026-09-20', days, S).total).toBe(maxDailyScore(S))
   })
