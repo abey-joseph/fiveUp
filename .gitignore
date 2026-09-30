@@ -1,0 +1,33 @@
+# dependencies
+node_modules/
+
+# build output
+dist/
+dev-dist/
+*.tsbuildinfo
+coverage/
+
+# env / secrets — never commit real config or keys
+.env*
+!.env.example
+*-service-account*.json
+*serviceAccount*.json
+*-firebase-adminsdk-*.json
+service-account*.json
+credentials*.json
+gcloud-key*.json
+key.json
+
+# firebase
+.firebase/
+*-debug.log
+firebase-debug.log*
+firestore-debug.log*
+ui-debug.log*
+
+# editor / os
+.DS_Store
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.log
