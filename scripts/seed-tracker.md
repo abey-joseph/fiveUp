@@ -5,7 +5,18 @@ Clients can't write it (security rules), so create it once in the Firebase conso
 
 > No secrets are involved — this is just a Firestore document with two email addresses.
 
-## Steps
+## Option A — script (needs the service account key)
+
+With `FIREBASE_SERVICE_ACCOUNT` set (see the README), this creates the document with the default
+settings. It's a dry run unless `--commit` is passed, and it never replaces an existing document
+unless `--overwrite` is passed:
+
+```bash
+npx tsx scripts/create-tracker.ts \
+  --writer-email her@gmail.com --writer-name Amala --viewer-email you@gmail.com --commit
+```
+
+## Option B — Firebase console
 
 1. Open the [Firebase console](https://console.firebase.google.com/) → your project →
    **Build → Firestore Database**. If Firestore isn't created yet, click **Create database**

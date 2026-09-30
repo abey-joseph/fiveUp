@@ -316,14 +316,16 @@ README.md
 - Firebase web config goes in `.env.local` as `VITE_FIREBASE_API_KEY`,
   `VITE_FIREBASE_AUTH_DOMAIN`, `VITE_FIREBASE_PROJECT_ID`, `VITE_FIREBASE_APP_ID`, etc. Commit a
   `.env.example` with empty values; **never commit `.env.local`**.
-- Deployment and admin scripts use a **service account key** provided via the
-  `GOOGLE_APPLICATION_CREDENTIALS` environment variable (a secret in the cloud environment). **Never
+- Deployment and admin scripts use a **service account key**, provided as a secret in the cloud
+  environment: `FIREBASE_SERVICE_ACCOUNT` (the key JSON, raw or base64-encoded — environment
+  variables are single-line, so base64 is the easy option) or `GOOGLE_APPLICATION_CREDENTIALS`
+  (path to the key file). Scripts load it via `scripts/lib/adminApp.ts`. **Never
   write the key into the repo, logs, or commit history.** `.gitignore` covers `*.json` key
   filenames and `.env*` (except `.env.example`).
 - `data/*.csv` except `data/backfill-template.csv` is gitignored — it is personal data.
 - Provide a `scripts/seed-tracker.md` (instructions, not code with secrets) explaining how to create
   the `trackers/main` doc in the Firebase console with the two emails and default settings
-  (including `timezone`).
+  (including `timezone`), plus `scripts/create-tracker.ts` to create it with the Admin SDK instead.
 
 ---
 
