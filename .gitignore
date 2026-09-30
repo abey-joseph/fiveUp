@@ -31,3 +31,7 @@ ui-debug.log*
 !.vscode/extensions.json
 .idea/
 *.log
+
+# personal data — only the template CSV is committed
+data/*.csv
+!data/backfill-template.csv
