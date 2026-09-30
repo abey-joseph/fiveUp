@@ -215,7 +215,8 @@ encouraging tone. Bottom tab bar: **Today · History · Stats**.
 - Header: the date (e.g. "Thu, 1 Oct") and a date switcher (◀ ▶ arrows + tap to open a date
   picker) so she can go to **any past day** and edit it. Future dates (in the tracker timezone) are
   not allowed. A "Back to today" chip appears when not on today. "Today" is today in the tracker
-  timezone.
+  timezone. The selected date lives in the URL (`/?date=yyyy-MM-dd`, omitted for today) so
+  History can link to a day; invalid or future dates fall back to today.
 - **Score ring:** the day's total score out of 74 (`maxDailyScore(settings)`), with the breakdown
   underneath (meals / snacks / bonus / streak bonus).
 - **5 meal tiles** in fixed order. Tap to toggle done. Done tiles show a check and the logged time
@@ -223,7 +224,9 @@ encouraging tone. Bottom tab bar: **Today · History · Stats**.
   with "Undo" after each toggle.
 - **Snack counter:** − / count / + buttons, 0–10, with the "Snack points maxed" hint after 3.
 - **Note:** optional one-line text field, saves on blur (debounced).
-- **Streak badge:** "🔥 4-day streak" if the current streak > 0.
+- **Streak badge:** "🔥 4-day streak" if the current streak > 0. On today, while the day isn't
+  full yet, a streak that is still alive (yesterday was full) keeps showing, with "finish today to
+  keep it going".
 - Celebrate a full day with a light, tasteful animation (no big confetti library — keep the bundle
   small).
 - **Viewer mode:** same screen, all controls disabled/hidden, with a small

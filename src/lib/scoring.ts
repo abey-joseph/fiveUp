@@ -106,3 +106,18 @@ export function maxDailyScore(settings: Settings): number {
 export function bestStreak(streaks: Record<DateKey, number>): number {
   return Object.values(streaks).reduce((a, b) => Math.max(a, b), 0)
 }
+
+/**
+ * The streak to show on a day's screen. On today, a streak that's still alive (yesterday was full,
+ * today isn't finished yet) is shown as `pending` so it doesn't drop to 0 mid-day.
+ */
+export function displayStreak(
+  days: DayMap,
+  selected: DateKey,
+  today: DateKey,
+): { days: number; pending: boolean } {
+  const own = streakAt(days, selected)
+  if (own > 0 || selected !== today) return { days: own, pending: false }
+  const alive = streakAt(days, addDaysKey(today, -1))
+  return { days: alive, pending: alive > 0 }
+}

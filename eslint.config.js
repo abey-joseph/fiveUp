@@ -19,6 +19,8 @@ export default tseslint.config(
     },
     rules: {
       ...reactHooks.configs.recommended.rules,
+      // Only meaningful with the React Compiler, which this project doesn't use.
+      'react-hooks/preserve-manual-memoization': 'off',
       'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
     },
   },
