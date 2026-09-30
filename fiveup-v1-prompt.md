@@ -1,8 +1,8 @@
 # FiveUp — v1 Build Spec
 
 > **This file is the single source of truth for FiveUp v1.** Any change request is applied here
-> first, then implemented. Current revision: **v1 + Change Request 1** (max daily score corrected to 74) (tracker timezone, one-time
-> backfill importer).
+> first, then implemented. Current revision: **v1 + Change Request 1** (tracker timezone, one-time
+> backfill importer) — max daily score corrected to 74.
 
 You are building **FiveUp**, a small meal-tracking web app (PWA) for two people. Read this whole
 spec before writing code. Work in the stages listed under "Build order", commit after each stage,
@@ -209,8 +209,8 @@ encouraging tone. Bottom tab bar: **Today · History · Stats**.
   picker) so she can go to **any past day** and edit it. Future dates (in the tracker timezone) are
   not allowed. A "Back to today" chip appears when not on today. "Today" is today in the tracker
   timezone.
-- **Score ring:** the day's total score out of 74 (i.e. `maxDailyScore(settings)`), with the breakdown underneath (meals / snacks /
-  bonus / streak bonus).
+- **Score ring:** the day's total score out of 74 (`maxDailyScore(settings)`), with the breakdown
+  underneath (meals / snacks / bonus / streak bonus).
 - **5 meal tiles** in fixed order. Tap to toggle done. Done tiles show a check and the logged time
   in the tracker timezone (e.g. "✓ 8:42 am"); if `at` is `null`, show just "✓". Show a small toast
   with "Undo" after each toggle.
