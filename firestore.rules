@@ -1,0 +1,73 @@
+rules_version = '2';
+
+// FiveUp security rules (spec §5).
+// - Writer + viewers (by Google email in trackers/{id}) can read the tracker and its days.
+// - Only the writer can create/update/delete days, and every write is schema-validated.
+// - The tracker doc itself is read-only from clients (edit it in the Firebase console).
+// - Everything else is denied.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function verifiedEmail() {
+      return request.auth != null
+        && request.auth.token.email_verified == true
+        && request.auth.token.email is string;
+    }
+
+    function isWriterOf(t) {
+      return verifiedEmail() && request.auth.token.email == t.writerEmail;
+    }
+
+    function isMemberOf(t) {
+      return isWriterOf(t)
+        || (verifiedEmail() && t.viewerEmails is list
+            && request.auth.token.email in t.viewerEmails);
+    }
+
+    function trackerData(trackerId) {
+      return get(/databases/$(database)/documents/trackers/$(trackerId)).data;
+    }
+
+    // Keep in sync with src/lib/meals.ts.
+    function mealKeys() {
+      return ['breakfast', 'brunch', 'lunch', 'evening', 'dinner'];
+    }
+
+    function validMeal(m) {
+      return m is map
+        && m.keys().hasAll(['done', 'at']) && m.keys().hasOnly(['done', 'at'])
+        && m.done is bool
+        && (m.at == null || m.at is timestamp)
+        && (m.done || m.at == null);
+    }
+
+    function validDay(dateKey, d) {
+      return dateKey.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+        && d.keys().hasAll(['meals', 'snacks', 'note', 'updatedAt'])
+        && d.keys().hasOnly(['meals', 'snacks', 'note', 'updatedAt'])
+        && d.meals is map
+        && d.meals.keys().hasAll(mealKeys()) && d.meals.keys().hasOnly(mealKeys())
+        && validMeal(d.meals.breakfast)
+        && validMeal(d.meals.brunch)
+        && validMeal(d.meals.lunch)
+        && validMeal(d.meals.evening)
+        && validMeal(d.meals.dinner)
+        && d.snacks is int && d.snacks >= 0 && d.snacks <= 10
+        && d.note is string && d.note.size() <= 300
+        // Must be set with serverTimestamp().
+        && d.updatedAt == request.time;
+    }
+
+    match /trackers/{trackerId} {
+      allow read: if isMemberOf(resource.data);
+      allow write: if false;
+
+      match /days/{dateKey} {
+        allow read: if isMemberOf(trackerData(trackerId));
+        allow create, update: if isWriterOf(trackerData(trackerId))
+          && validDay(dateKey, request.resource.data);
+        allow delete: if isWriterOf(trackerData(trackerId));
+      }
+    }
+  }
+}

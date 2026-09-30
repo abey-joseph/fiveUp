@@ -127,8 +127,10 @@ points score and streaks keep her motivated.
 ```
 trackers/{trackerId}                      // one tracker doc; trackerId = "main"
   name: "FiveUp"
-  writerEmail: string                     // the writer's Google email
-  viewerEmails: string[]                  // [the viewer's email]
+  writerName: string                      // optional display name, e.g. "Mia" (falls back to
+                                          // the part of writerEmail before "@")
+  writerEmail: string                     // the writer's Google email (lowercase)
+  viewerEmails: string[]                  // [the viewer's email] (lowercase)
   settings: {
     mealPoints: 10,
     snackPoints: 3,
@@ -175,7 +177,9 @@ Access is controlled by the Google account email stored in the tracker doc.
   - only the fields `meals`, `snacks`, `note`, `updatedAt` are present
   - `snacks` is an int between 0 and 10
   - `note` is a string ≤ 300 chars
-  - `meals` has exactly the five keys
+  - `meals` has exactly the five keys, each `{ done: bool, at: timestamp | null }` with no other
+    fields, and `at == null` whenever `done == false`
+  - `updatedAt == request.time` (i.e. written with `serverTimestamp()`)
 - **Delete days:** only the writer.
 - **Tracker doc (including settings):** read by writer + viewers; **no client writes** in v1 (edited
   in the Firebase console).
@@ -184,7 +188,10 @@ Access is controlled by the Google account email stored in the tracker doc.
   Admin SDK (which bypasses rules), so **no rule changes** are needed for it.
 
 Add rules tests with `@firebase/rules-unit-testing` against the Firestore emulator (Java 21 is
-available in the build environment).
+available in the build environment): `npm run test:rules`.
+
+For local development the app can run entirely against the Auth + Firestore emulators
+(`npm run emulators`, `npm run seed:emulator`, `npm run dev:emulator`).
 
 ---
 
@@ -220,7 +227,7 @@ encouraging tone. Bottom tab bar: **Today · History · Stats**.
 - Celebrate a full day with a light, tasteful animation (no big confetti library — keep the bundle
   small).
 - **Viewer mode:** same screen, all controls disabled/hidden, with a small
-  "Viewing <name>'s tracker" label, and a line showing the tracker's local time, e.g.
+  "Viewing <writerName>'s tracker" label, and a line showing the tracker's local time, e.g.
   `Her time: Thu 1 Oct, 1:42 am (NZ)`.
 - Updates must be **optimistic** (UI changes instantly) and use a real-time Firestore listener
   (`onSnapshot`) so the viewer sees changes live.

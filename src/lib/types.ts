@@ -37,6 +37,8 @@ export type Role = 'writer' | 'viewer'
 
 export interface TrackerDoc {
   name: string
+  /** Display name of the writer, e.g. in "Viewing Mia's tracker". Optional in Firestore. */
+  writerName: string
   writerEmail: string
   viewerEmails: string[]
   settings: Settings
