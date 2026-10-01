@@ -40,7 +40,7 @@ npx tsx scripts/create-tracker.ts \
 | `mealPoints`         | number | `10`               |
 | `snackPoints`        | number | `3`                |
 | `snackCap`           | number | `3`                |
-| `snackCapBonus`      | number | `1`                |
+| `snackCapBonus`      | number | `5`                |
 | `fullDayBonus`       | number | `10`               |
 | `streakBonus`        | number | `5`                |
 | `streakBonusMinDays` | number | `3`                |
@@ -71,7 +71,7 @@ npx tsx scripts/create-tracker.ts \
     "mealPoints": 10,
     "snackPoints": 3,
     "snackCap": 3,
-    "snackCapBonus": 1,
+    "snackCapBonus": 5,
     "fullDayBonus": 10,
     "streakBonus": 5,
     "streakBonusMinDays": 3,

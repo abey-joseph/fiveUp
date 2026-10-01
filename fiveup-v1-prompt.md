@@ -1,9 +1,9 @@
 # FiveUp — v1 Build Spec
 
 > **This file is the single source of truth for FiveUp v1.** Any change request is applied here
-> first, then implemented. Current revision: **v1 + Change Request 2** (CR1: tracker timezone,
-> one-time backfill importer; CR2: +1 snack bonus at 3 snacks, so snacks max out at 10 and the
-> max daily score is 75).
+> first, then implemented. Current revision: **v1 + Change Request 3** (CR1: tracker timezone,
+> one-time backfill importer; CR2: snack bonus at 3 snacks; CR3: snack bonus raised from +1 to +5,
+> so snacks max out at 14 and the max daily score is 79).
 
 You are building **FiveUp**, a small meal-tracking web app (PWA) for two people. Read this whole
 spec before writing code. Work in the stages listed under "Build order", commit after each stage,
@@ -62,8 +62,8 @@ points score and streaks keep her motivated.
 
 - 3 points per snack.
 - **Points are capped at 3 snacks per day.**
-- **Snack bonus:** +1 when she reaches the cap (3 or more snacks), rounding snacks off to
-  **max 10 pts** (3 × 3 + 1). The bonus is part of the snack points in the score breakdown.
+- **Snack bonus:** +5 when she reaches the cap (3 or more snacks), so snacks earn
+  **max 14 pts** (3 × 3 + 5). The bonus is part of the snack points in the score breakdown.
 - She may log more than 3 snacks (UI counter goes up to 10) — extra snacks are recorded but earn no
   points. Show a small hint like "Snack points maxed" once she passes 3.
 
@@ -76,7 +76,7 @@ points score and streaks keep her motivated.
 
 ### Maximum daily score
 
-`50 (meals) + 10 (snacks, incl. +1 snack bonus) + 10 (full-day) + 5 (streak) = 75`
+`50 (meals) + 14 (snacks, incl. +5 snack bonus) + 10 (full-day) + 5 (streak) = 79`
 
 ### Implementation rules
 
@@ -90,9 +90,9 @@ points score and streaks keep her motivated.
   ```
 - Point values come from the **settings document** (section 4), not hard-coded constants. Keep the
   defaults above in `src/lib/defaultSettings.ts` as a fallback if the settings doc is missing.
-- Write **Vitest unit tests** covering: empty day = 0, all meals, snack cap and snack bonus (2, 3, 5 snacks → 6, 10, 10 pts),
+- Write **Vitest unit tests** covering: empty day = 0, all meals, snack cap and snack bonus (2, 3, 5 snacks → 6, 14, 14 pts),
   full-day bonus, streak of 1/2/3/4, streak broken by a non-full day, missing days (no document)
-  count as non-full, max score = 75.
+  count as non-full, max score = 79.
 
 ---
 
@@ -138,7 +138,7 @@ trackers/{trackerId}                      // one tracker doc; trackerId = "main"
     mealPoints: 10,
     snackPoints: 3,
     snackCap: 3,
-    snackCapBonus: 1,                     // extra points once snacks reach snackCap
+    snackCapBonus: 5,                     // extra points once snacks reach snackCap
     fullDayBonus: 10,
     streakBonus: 5,
     streakBonusMinDays: 3,
@@ -221,7 +221,7 @@ encouraging tone. Bottom tab bar: **Today · History · Stats**.
   not allowed. A "Back to today" chip appears when not on today. "Today" is today in the tracker
   timezone. The selected date lives in the URL (`/?date=yyyy-MM-dd`, omitted for today) so
   History can link to a day; invalid or future dates fall back to today.
-- **Score ring:** the day's total score out of 75 (`maxDailyScore(settings)`), with the breakdown
+- **Score ring:** the day's total score out of 79 (`maxDailyScore(settings)`), with the breakdown
   underneath (meals / snacks / bonus / streak bonus).
 - **5 meal tiles** in fixed order. Tap to toggle done. Done tiles show a check and the logged time
   in the tracker timezone (e.g. "✓ 8:42 am"); if `at` is `null`, show just "✓". Show a small toast
@@ -376,7 +376,7 @@ README.md
 - [ ] Viewer can sign in and see everything live, but cannot change anything (UI disabled **and**
       rules reject writes).
 - [ ] Any other Google account sees the NoAccess screen and cannot read data.
-- [ ] Scores match the rules in section 3 exactly; max is 75; unit tests pass.
+- [ ] Scores match the rules in section 3 exactly; max is 79; unit tests pass.
 - [ ] Dates are always tracker-timezone dates (default `Pacific/Auckland`), even if the device
       timezone is different, and DST transitions are handled.
 - [ ] History calendar and Stats are correct for the loaded data.

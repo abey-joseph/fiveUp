@@ -58,9 +58,9 @@ describe('base score', () => {
     [0, 0],
     [1, 3],
     [2, 6],
-    [3, 10],
-    [5, 10],
-    [10, 10],
+    [3, 14],
+    [5, 14],
+    [10, 14],
   ])('snack cap + bonus: %i snacks → %i pts', (snacks, pts) => {
     expect(computeDayBaseScore(day([], snacks), S)).toBe(pts)
   })
@@ -189,7 +189,7 @@ describe('computeDayScore', () => {
   it('breakdown parts add up', () => {
     const days = run('2026-09-18', [full(), full(), day('all', 5)])
     const s = computeDayScore('2026-09-20', days, S)
-    expect(s).toMatchObject({ mealPoints: 50, snackPoints: 10, fullDayBonus: 10, mealsDone: 5 })
+    expect(s).toMatchObject({ mealPoints: 50, snackPoints: 14, fullDayBonus: 10, mealsDone: 5 })
     expect(s.mealPoints + s.snackPoints + s.fullDayBonus + s.streakBonus).toBe(s.total)
   })
 
@@ -197,9 +197,9 @@ describe('computeDayScore', () => {
     expect(computeDayScore('2026-09-18', {}, S)).toMatchObject({ total: 0, streak: 0 })
   })
 
-  it('max score = 75 and is reachable', () => {
-    // Spec §3: 50 (meals) + 10 (snacks incl. +1 bonus) + 10 (full-day) + 5 (streak)
-    expect(maxDailyScore(S)).toBe(75)
+  it('max score = 79 and is reachable', () => {
+    // Spec §3: 50 (meals) + 14 (snacks incl. +5 bonus) + 10 (full-day) + 5 (streak)
+    expect(maxDailyScore(S)).toBe(79)
     const days = run('2026-09-18', [full(), full(), day('all', 10)])
     expect(computeDayScore('2026-09-20', days, S).total).toBe(maxDailyScore(S))
   })

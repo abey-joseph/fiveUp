@@ -7,7 +7,7 @@ export const DEFAULT_SETTINGS: Readonly<Settings> = Object.freeze({
   mealPoints: 10,
   snackPoints: 3,
   snackCap: 3,
-  snackCapBonus: 1,
+  snackCapBonus: 5,
   fullDayBonus: 10,
   streakBonus: 5,
   streakBonusMinDays: 3,
