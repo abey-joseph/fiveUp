@@ -12,36 +12,63 @@ export interface DayRangeState {
   error: string | null
 }
 
+/** How long to wait for the server before accepting a cache-only result. */
+const CACHE_FALLBACK_MS = 5000
+
 const EMPTY: DayMap = Object.freeze({}) as DayMap
 
 interface Keyed {
   rangeKey: string
   days: DayMap
+  /** False while showing a cache-only result that the server hasn't confirmed yet. */
+  complete: boolean
   error: string | null
 }
 
-/** Live day documents with IDs in [from, to]. Only that range is read. */
+/**
+ * Live day documents with IDs in [from, to]. Only that range is read.
+ *
+ * The offline cache may answer first with just the days this device has seen; that result is
+ * shown but not `loaded` (so streaks/totals aren't treated as final) until the server confirms
+ * it — unless the device is offline (or the server doesn't answer within 5 s), when the cache is
+ * all there is.
+ */
 export function useDayRange(trackerId: string, from: DateKey, to: DateKey): DayRangeState {
   const rangeKey = `${trackerId}/${from}/${to}`
   const [state, setState] = useState<Keyed | null>(null)
 
   useEffect(() => {
-    return onSnapshot(
+    const key = `${trackerId}/${from}/${to}`
+    let timer: ReturnType<typeof setTimeout> | undefined
+    const unsubscribe = onSnapshot(
       dayRangeQuery(trackerId, from, to),
+      { includeMetadataChanges: true },
       (s) => {
         const days: DayMap = {}
         s.forEach((d) => {
           days[d.id] = dayFromData(d.data({ serverTimestamps: 'estimate' }))
         })
-        setState({ rangeKey: `${trackerId}/${from}/${to}`, days, error: null })
+        const complete = !s.metadata.fromCache || !navigator.onLine
+        clearTimeout(timer)
+        // On a connection that looks online but can't reach the server, settle for the cache.
+        if (!complete) {
+          timer = setTimeout(
+            () => setState((prev) => (prev?.rangeKey === key ? { ...prev, complete: true } : prev)),
+            CACHE_FALLBACK_MS,
+          )
+        }
+        setState({ rangeKey: key, days, complete, error: null })
       },
-      (err) =>
-        setState({ rangeKey: `${trackerId}/${from}/${to}`, days: EMPTY, error: err.message }),
+      (err) => setState({ rangeKey: key, days: EMPTY, complete: true, error: err.message }),
     )
+    return () => {
+      clearTimeout(timer)
+      unsubscribe()
+    }
   }, [trackerId, from, to])
 
   if (state?.rangeKey !== rangeKey) return { days: EMPTY, loaded: false, error: null }
-  return { days: state.days, loaded: true, error: state.error }
+  return { days: state.days, loaded: state.complete, error: state.error }
 }
 
 const INITIAL_LOOKBACK = 60

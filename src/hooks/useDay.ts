@@ -40,7 +40,11 @@ export function useDay(
     latest.current = null
     return onSnapshot(
       dayRef(trackerId, key),
+      { includeMetadataChanges: true },
       (s) => {
+        // A cache-only "doesn't exist" while online may just mean this device hasn't seen the
+        // day yet; wait for the server so a tap can't overwrite data stored there.
+        if (s.metadata.fromCache && !s.exists() && navigator.onLine) return
         const day = s.exists() ? dayFromData(s.data({ serverTimestamps: 'estimate' })) : undefined
         latest.current = { key, day }
         setSnap({ key, day })
