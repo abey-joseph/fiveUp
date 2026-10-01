@@ -45,7 +45,7 @@ export default defineConfig({
     }),
   ],
   test: {
-    include: ['src/**/*.test.ts'],
+    include: ['src/**/*.test.ts', 'scripts/**/*.test.ts'],
     environment: 'node',
     // Run as if on the viewer's phone (Singapore) so any accidental use of the device timezone
     // shows up as a failing test. dates.test.ts also switches TZ explicitly.

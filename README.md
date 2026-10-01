@@ -30,6 +30,9 @@ npm run dev
 | `npm run format`        | Format with Prettier                          |
 | `npm run icons`         | Regenerate PWA icons from `public/logo.svg`   |
 
+Admin scripts (need a service account, see below): `scripts/create-tracker.ts` creates the
+tracker document; `scripts/import-days.ts` imports past days from a CSV.
+
 ## Firebase setup
 
 1. **Create a project** at <https://console.firebase.google.com/> (the free Spark plan is enough).
@@ -76,6 +79,48 @@ npm run dev:emulator     # terminal 2: app at http://localhost:5173
 Sign in with the emulator's fake Google popup as `writer@example.com` (tracker),
 `viewer@example.com` (viewer) or any other email (no access).
 
+## Importing past data
+
+History from before the app (18–30 Sep 2026) is loaded once with an admin script, so streaks,
+the History calendar and Stats continue from it. The viewer stays read-only — the script uses the
+Firebase Admin SDK, which bypasses security rules, and writes documents in exactly the app's
+format (meals with `at: null`, no extra fields), so the tracker can still edit those days.
+
+1. **Credentials:** a service-account key for the project (Firebase console → Project settings →
+   Service accounts → Generate new private key). Provide it as `FIREBASE_SERVICE_ACCOUNT` (the
+   JSON, raw or base64) or `GOOGLE_APPLICATION_CREDENTIALS` (path to the file). Never commit it.
+2. **CSV:** copy [`data/backfill-template.csv`](data/backfill-template.csv) to e.g.
+   `data/backfill-sep-2026.csv` (every `data/*.csv` except the template is gitignored):
+
+   ```csv
+   date,breakfast,brunch,lunch,evening,dinner,snacks,note
+   2026-09-18,1,1,1,0,1,2,
+   2026-09-19,1,0,1,1,1,0,"skipped brunch, busy day"
+   ```
+
+   - `date`: `yyyy-MM-dd` in the tracker timezone; not in the future, no duplicates.
+   - Meals: `1`/`0`, `y`/`n`, `yes`/`no`, `true`/`false`; blank = no.
+   - `snacks`: whole number 0–10, blank = 0. `note`: optional, ≤ 300 characters, quote it if it
+     contains commas. The `snacks` and `note` columns may be left out.
+
+3. **Dry run** (the default) — validates every row and prints each day's meals, score and streak
+   using the app's scoring code. If any row is invalid, all problems are listed and nothing runs.
+
+   ```bash
+   npx tsx scripts/import-days.ts --file data/backfill-sep-2026.csv
+   ```
+
+4. **Write** once the dry run looks right:
+
+   ```bash
+   npx tsx scripts/import-days.ts --file data/backfill-sep-2026.csv --commit
+   ```
+
+Days that already exist in Firestore (e.g. logged in the app) are **skipped and reported**, never
+overwritten, unless you pass `--overwrite`. Other options: `--tracker <id>` (default `main`).
+To try it locally first, run it against the emulator with `FIRESTORE_EMULATOR_HOST=127.0.0.1:8080`
+and `FIREBASE_SERVICE_ACCOUNT` unset.
+
 ## Deploy
 
-_TODO (stage 8)._
+_TODO (stage 9)._

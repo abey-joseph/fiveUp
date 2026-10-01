@@ -1,0 +1,4 @@
+date,breakfast,brunch,lunch,evening,dinner,snacks,note
+2026-09-18,1,1,1,0,1,2,
+2026-09-19,1,0,1,1,1,0,skipped brunch
+2026-09-20,y,y,y,y,y,1,"quoted note, with a comma"
