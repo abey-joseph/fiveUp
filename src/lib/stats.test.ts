@@ -21,7 +21,7 @@ describe('weekStats', () => {
     const days: DayMap = {
       '2026-09-27': day('all', 3), // Sunday: previous week
       '2026-09-28': day('all', 1), // streak 2 → 63
-      '2026-09-29': day(['breakfast', 'lunch'], 5), // 20 + 9 (cap) = 29
+      '2026-09-29': day(['breakfast', 'lunch'], 5), // 20 + 9 (cap) + 1 (snack bonus) = 30
       // 30 Sep: no document → 0
       '2026-10-01': day(['dinner']), // 10
       '2026-10-02': day('all', 4), // future: ignored
@@ -29,7 +29,7 @@ describe('weekStats', () => {
     const w = weekStats(days, S, TODAY)
     expect(w.from).toBe('2026-09-28')
     expect(w.daysSoFar).toBe(4)
-    expect(w.avgScore).toBeCloseTo((63 + 29 + 0 + 10) / 4)
+    expect(w.avgScore).toBeCloseTo((63 + 30 + 0 + 10) / 4)
     expect(w.avgMeals).toBeCloseTo((5 + 2 + 0 + 1) / 4)
     expect(w.snacks).toBe(6)
   })

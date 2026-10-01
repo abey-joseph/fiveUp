@@ -73,12 +73,12 @@ describe('summarizeMonth', () => {
     // Full days 28 Sep → 2 Oct: streaks 1,2,3 in Sep, then 4,5 in Oct (both get +5).
     const days: DayMap = {}
     for (let k = '2026-09-28'; k <= '2026-10-02'; k = addDaysKey(k, 1)) days[k] = day(5)
-    days['2026-10-03'] = day(2, 5) // 20 meals + 9 snacks (capped)
+    days['2026-10-03'] = day(2, 5) // 20 meals + 9 snacks (capped) + 1 snack bonus
     const oct = summarizeMonth('2026-10-01', days, S, '2026-10-10')
     expect(oct.cells[0]!.score).toBe(65)
     expect(oct.cells[1]!.score).toBe(65)
-    expect(oct.cells[2]).toMatchObject({ level: 'some', score: 29 })
-    expect(oct.totalScore).toBe(65 + 65 + 29)
+    expect(oct.cells[2]).toMatchObject({ level: 'some', score: 30 })
+    expect(oct.totalScore).toBe(65 + 65 + 30)
     expect(oct.fullDays).toBe(2)
 
     const sep = summarizeMonth('2026-09-01', days, S, '2026-10-10')

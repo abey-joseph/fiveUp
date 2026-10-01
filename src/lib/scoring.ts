@@ -1,21 +1,22 @@
 /**
  * Pure scoring logic. No Firebase imports — also used by the backfill importer script.
  *
- * Rules (spec §3): points per meal, points per snack up to a cap, a full-day bonus when every
- * meal is done, and a streak bonus on full days whose streak reaches `streakBonusMinDays`.
+ * Rules (spec §3): points per meal, points per snack up to a cap plus a bonus for reaching the cap,
+ * a full-day bonus when every meal is done, and a streak bonus on full days whose streak reaches `streakBonusMinDays`.
  */
 import { addDaysKey, keysInRange } from './dates.ts'
 import { MEALS, MEAL_KEYS } from './meals.ts'
 import type { DateKey, DayDoc, DayMap, Settings } from './types.ts'
 
 export interface DayScore {
-  /** Meals + snacks + full-day bonus. */
+  /** Meals + snacks (incl. snack bonus) + full-day bonus. */
   base: number
   streakBonus: number
   total: number
   /** Consecutive full days ending on this day (0 if this day isn't full). */
   streak: number
   mealPoints: number
+  /** Includes the snack bonus once snacks reach the cap. */
   snackPoints: number
   fullDayBonus: number
   mealsDone: number
@@ -35,12 +36,18 @@ function scoringSnacks(day: DayDoc, settings: Settings): number {
   return Math.min(snacks, settings.snackCap)
 }
 
+function snackPoints(day: DayDoc, settings: Settings): number {
+  const counted = scoringSnacks(day, settings)
+  const bonus = counted > 0 && counted >= settings.snackCap ? settings.snackCapBonus : 0
+  return counted * settings.snackPoints + bonus
+}
+
 function baseParts(day: DayDoc | undefined, settings: Settings) {
   if (!day) return { mealPoints: 0, snackPoints: 0, fullDayBonus: 0, mealsDone: 0 }
   const done = mealsDone(day)
   return {
     mealPoints: done * settings.mealPoints,
-    snackPoints: scoringSnacks(day, settings) * settings.snackPoints,
+    snackPoints: snackPoints(day, settings),
     fullDayBonus: done === MEAL_KEYS.length ? settings.fullDayBonus : 0,
     mealsDone: done,
   }
@@ -97,6 +104,7 @@ export function maxDailyScore(settings: Settings): number {
   return (
     MEALS.length * settings.mealPoints +
     settings.snackCap * settings.snackPoints +
+    (settings.snackCap > 0 ? settings.snackCapBonus : 0) +
     settings.fullDayBonus +
     settings.streakBonus
   )

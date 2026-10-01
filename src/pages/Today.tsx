@@ -158,6 +158,7 @@ export default function Today() {
           count={day.snacks}
           cap={settings.snackCap}
           pointsEach={settings.snackPoints}
+          capBonus={settings.snackCapBonus}
           canEdit={canEdit}
           onChange={(n) => update((d) => withSnacks(d, n))}
         />

@@ -26,6 +26,8 @@ export interface Settings {
   mealPoints: number
   snackPoints: number
   snackCap: number
+  /** Extra points once snacks reach `snackCap`. */
+  snackCapBonus: number
   fullDayBonus: number
   streakBonus: number
   streakBonusMinDays: number

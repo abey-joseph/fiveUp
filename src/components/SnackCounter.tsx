@@ -4,11 +4,19 @@ interface Props {
   count: number
   cap: number
   pointsEach: number
+  capBonus: number
   canEdit: boolean
   onChange: (count: number) => void
 }
 
-export default function SnackCounter({ count, cap, pointsEach, canEdit, onChange }: Props) {
+export default function SnackCounter({
+  count,
+  cap,
+  pointsEach,
+  capBonus,
+  canEdit,
+  onChange,
+}: Props) {
   const maxed = count >= cap
   const btn =
     'flex size-11 items-center justify-center rounded-full bg-brand-50 text-2xl font-semibold text-brand-700 ring-1 ring-brand-200 transition hover:bg-brand-100 disabled:opacity-40'
@@ -26,7 +34,9 @@ export default function SnackCounter({ count, cap, pointsEach, canEdit, onChange
           Snacks
         </p>
         <p className={`text-sm ${maxed ? 'text-leaf-700' : 'text-stone-500'}`} aria-live="polite">
-          {maxed ? 'Snack points maxed' : `+${pointsEach} pts each, up to ${cap}`}
+          {maxed
+            ? 'Snack points maxed'
+            : `+${pointsEach} pts each, up to ${cap}${capBonus > 0 ? ` (+${capBonus} bonus)` : ''}`}
         </p>
       </div>
       {canEdit ? (

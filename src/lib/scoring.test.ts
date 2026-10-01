@@ -58,10 +58,10 @@ describe('base score', () => {
     [0, 0],
     [1, 3],
     [2, 6],
-    [3, 9],
-    [5, 9],
-    [10, 9],
-  ])('snack cap: %i snacks → %i pts', (snacks, pts) => {
+    [3, 10],
+    [5, 10],
+    [10, 10],
+  ])('snack cap + bonus: %i snacks → %i pts', (snacks, pts) => {
     expect(computeDayBaseScore(day([], snacks), S)).toBe(pts)
   })
 
@@ -73,8 +73,20 @@ describe('base score', () => {
   })
 
   it('point values come from settings, not constants', () => {
-    const custom: Settings = { ...S, mealPoints: 5, snackPoints: 1, snackCap: 5, fullDayBonus: 20 }
-    expect(computeDayBaseScore(day('all', 7), custom)).toBe(25 + 5 + 20)
+    const custom: Settings = {
+      ...S,
+      mealPoints: 5,
+      snackPoints: 1,
+      snackCap: 5,
+      snackCapBonus: 4,
+      fullDayBonus: 20,
+    }
+    expect(computeDayBaseScore(day('all', 7), custom)).toBe(25 + 5 + 4 + 20)
+    expect(computeDayBaseScore(day([], 4), custom)).toBe(4)
+  })
+
+  it('snack bonus can be turned off in settings', () => {
+    expect(computeDayBaseScore(day([], 3), { ...S, snackCapBonus: 0 })).toBe(9)
   })
 })
 
@@ -177,7 +189,7 @@ describe('computeDayScore', () => {
   it('breakdown parts add up', () => {
     const days = run('2026-09-18', [full(), full(), day('all', 5)])
     const s = computeDayScore('2026-09-20', days, S)
-    expect(s).toMatchObject({ mealPoints: 50, snackPoints: 9, fullDayBonus: 10, mealsDone: 5 })
+    expect(s).toMatchObject({ mealPoints: 50, snackPoints: 10, fullDayBonus: 10, mealsDone: 5 })
     expect(s.mealPoints + s.snackPoints + s.fullDayBonus + s.streakBonus).toBe(s.total)
   })
 
@@ -185,9 +197,9 @@ describe('computeDayScore', () => {
     expect(computeDayScore('2026-09-18', {}, S)).toMatchObject({ total: 0, streak: 0 })
   })
 
-  it('max score = 74 and is reachable', () => {
-    // Spec §3: 50 (meals) + 9 (snacks) + 10 (full-day) + 5 (streak)
-    expect(maxDailyScore(S)).toBe(74)
+  it('max score = 75 and is reachable', () => {
+    // Spec §3: 50 (meals) + 10 (snacks incl. +1 bonus) + 10 (full-day) + 5 (streak)
+    expect(maxDailyScore(S)).toBe(75)
     const days = run('2026-09-18', [full(), full(), day('all', 10)])
     expect(computeDayScore('2026-09-20', days, S).total).toBe(maxDailyScore(S))
   })
