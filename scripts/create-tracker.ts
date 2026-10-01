@@ -57,4 +57,20 @@ async function main(): Promise<number> {
   return 0
 }
 
-process.exitCode = await main()
+/** Short, actionable message instead of a gRPC stack trace. */
+function explain(err: unknown): string {
+  const e = err as { code?: number; reason?: string; details?: string; message?: string }
+  const msg = e.details || e.message || String(err)
+  if (e.reason === 'SERVICE_DISABLED')
+    return `${msg}\n  → Create the Firestore database (Firebase console → Build → Firestore Database).`
+  if (e.code === 7)
+    return `${msg}\n  → The service account needs the "Cloud Datastore User" role (roles/datastore.user).`
+  return msg
+}
+
+try {
+  process.exitCode = await main()
+} catch (err) {
+  console.error(`✗ ${explain(err)}`)
+  process.exitCode = 1
+}
