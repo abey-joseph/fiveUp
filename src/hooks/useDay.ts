@@ -52,8 +52,10 @@ export function useDay(
 
   const update = useCallback(
     (fn: (day: DayDoc) => DayDoc) => {
-      const base = latest.current?.key === key ? latest.current.day : undefined
-      const next = fn(base ?? emptyDay())
+      // Until this day's first snapshot arrives we don't know what's stored; building on an
+      // empty day here would overwrite it (setDoc replaces the whole doc). Ignore the tap.
+      if (latest.current?.key !== key) return
+      const next = fn(latest.current.day ?? emptyDay())
       latest.current = { key, day: next }
       setOptimistic({ key, day: next })
       setDoc(dayRef(trackerId, key), { ...dayToData(next), updatedAt: serverTimestamp() }).catch(
