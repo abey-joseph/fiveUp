@@ -21,10 +21,19 @@ export default function NoAccess({ email, onSignOut, errorMessage }: Props) {
           </>
         )}
       </p>
+      {errorMessage && (
+        <button
+          type="button"
+          onClick={() => window.location.reload()}
+          className="mt-8 min-h-12 w-full rounded-full bg-brand-700 px-5 font-semibold text-white transition hover:bg-brand-800"
+        >
+          Try again
+        </button>
+      )}
       <button
         type="button"
         onClick={() => void onSignOut()}
-        className="mt-8 min-h-12 w-full rounded-full bg-brand-600 px-5 font-semibold text-white transition hover:bg-brand-700"
+        className={`${errorMessage ? 'mt-3 bg-white text-stone-700 ring-1 ring-stone-300 hover:bg-stone-50' : 'mt-8 bg-brand-700 text-white hover:bg-brand-800'} min-h-12 w-full rounded-full px-5 font-semibold transition`}
       >
         Sign out
       </button>

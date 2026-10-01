@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 import { Navigate, Route, Routes } from 'react-router-dom'
 import type { User } from 'firebase/auth'
 import Header from './components/Header.tsx'
+import OfflineBanner from './components/OfflineBanner.tsx'
 import Splash from './components/Splash.tsx'
 import TabBar from './components/TabBar.tsx'
 import { useAuth } from './hooks/useAuth.ts'
@@ -75,6 +76,7 @@ function SignedInApp({ user, tracker, role, signOut }: SignedInProps) {
     <SessionContext.Provider value={session}>
       <div className="mx-auto flex min-h-dvh max-w-md flex-col">
         <Header />
+        <OfflineBanner canEdit={role === 'writer'} />
         <main className="flex-1 px-4 pb-24">
           <Routes>
             <Route path="/" element={<Today />} />

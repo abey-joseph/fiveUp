@@ -42,7 +42,7 @@ export default function Toast({ toast, onDismiss }: Props) {
                 toast.action?.onClick()
                 onDismiss()
               }}
-              className="min-h-9 rounded-full px-3 font-semibold text-brand-200 hover:bg-white/10"
+              className="min-h-11 rounded-full px-3 font-semibold text-brand-200 hover:bg-white/10"
             >
               {toast.action.label}
             </button>

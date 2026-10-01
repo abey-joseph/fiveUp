@@ -113,7 +113,7 @@ export default function BarChart({ data, max, today }: Props) {
                 x={cx}
                 y={H - BOTTOM + 27}
                 textAnchor="middle"
-                className={`text-[10px] tabular-nums ${isToday ? 'fill-stone-900 font-bold' : 'fill-stone-400'}`}
+                className={`text-[10px] tabular-nums ${isToday ? 'fill-stone-900 font-bold' : 'fill-stone-500'}`}
               >
                 {formatKey(d.key, 'd')}
               </text>

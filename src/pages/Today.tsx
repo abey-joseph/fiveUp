@@ -8,9 +8,16 @@ import ScoreRing from '../components/ScoreRing.tsx'
 import SnackCounter from '../components/SnackCounter.tsx'
 import Toast, { type ToastData } from '../components/Toast.tsx'
 import { useDay } from '../hooks/useDay.ts'
+import { useDocumentTitle } from '../hooks/useDocumentTitle.ts'
 import { useStreakDays } from '../hooks/useDayRange.ts'
 import { useNow } from '../hooks/useNow.ts'
-import { formatDateTimeInTz, isValidDateKey, todayKey, tzShortLabel } from '../lib/dates.ts'
+import {
+  formatDateTimeInTz,
+  formatKey,
+  isValidDateKey,
+  todayKey,
+  tzShortLabel,
+} from '../lib/dates.ts'
 import { toggleMeal, withMeal, withNote, withSnacks } from '../lib/dayDoc.ts'
 import { emptyDay } from '../lib/defaultSettings.ts'
 import { MEALS } from '../lib/meals.ts'
@@ -37,6 +44,7 @@ export default function Today() {
   const today = todayKey(tz, now)
   const [params, setParams] = useSearchParams()
   const selected = resolveSelected(params.get('date'), today)
+  useDocumentTitle(selected === today ? 'Today' : formatKey(selected, 'EEE d MMM'))
 
   const [toast, setToast] = useState<ToastData | null>(null)
   const toastSeq = useRef(0)
@@ -86,6 +94,9 @@ export default function Today() {
 
   return (
     <section className="flex flex-col gap-4">
+      <h1 className="sr-only">
+        {selected === today ? 'Today' : formatKey(selected, 'EEEE d MMMM yyyy')}
+      </h1>
       {!canEdit && (
         <div className="rounded-2xl bg-brand-100/70 px-4 py-2 text-center text-sm text-brand-700">
           <p className="font-semibold">Viewing {tracker.writerName}'s tracker</p>
@@ -124,34 +135,40 @@ export default function Today() {
         </p>
       )}
 
-      <ul className="flex flex-col gap-2" aria-busy={!loaded}>
-        {MEALS.map((meal) => (
-          <li key={meal.key}>
-            <MealTile
-              meal={meal}
-              entry={day.meals[meal.key]}
-              timezone={tz}
-              canEdit={canEdit}
-              onToggle={() => onToggleMeal(meal)}
-            />
-          </li>
-        ))}
-      </ul>
+      {/* Controls wait for the day to load: edits build on the stored day (see useDay). */}
+      <div
+        className={`flex flex-col gap-4 transition-opacity ${loaded ? '' : 'pointer-events-none animate-pulse opacity-60'}`}
+        aria-busy={!loaded}
+      >
+        <ul className="flex flex-col gap-2">
+          {MEALS.map((meal) => (
+            <li key={meal.key}>
+              <MealTile
+                meal={meal}
+                entry={day.meals[meal.key]}
+                timezone={tz}
+                canEdit={canEdit}
+                onToggle={() => onToggleMeal(meal)}
+              />
+            </li>
+          ))}
+        </ul>
 
-      <SnackCounter
-        count={day.snacks}
-        cap={settings.snackCap}
-        pointsEach={settings.snackPoints}
-        canEdit={canEdit}
-        onChange={(n) => update((d) => withSnacks(d, n))}
-      />
+        <SnackCounter
+          count={day.snacks}
+          cap={settings.snackCap}
+          pointsEach={settings.snackPoints}
+          canEdit={canEdit}
+          onChange={(n) => update((d) => withSnacks(d, n))}
+        />
 
-      <NoteField
-        key={selected}
-        value={day.note}
-        canEdit={canEdit}
-        onSave={(note) => update((d) => withNote(d, note))}
-      />
+        <NoteField
+          key={selected}
+          value={day.note}
+          canEdit={canEdit}
+          onSave={(note) => update((d) => withNote(d, note))}
+        />
+      </div>
 
       <Toast toast={toast} onDismiss={dismissToast} />
     </section>

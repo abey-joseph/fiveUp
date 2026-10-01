@@ -64,7 +64,7 @@ export default function ScoreRing({ score, max, full }: Props) {
             </dt>
             <dd
               className={`text-base font-semibold tabular-nums ${
-                p.value > 0 ? (p.bonus ? 'text-leaf-700' : 'text-stone-900') : 'text-stone-400'
+                p.value > 0 ? (p.bonus ? 'text-leaf-700' : 'text-stone-900') : 'text-stone-500'
               }`}
             >
               {p.bonus && p.value > 0 ? `+${p.value}` : p.value}

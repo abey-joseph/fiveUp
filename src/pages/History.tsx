@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import Calendar, { CalendarLegend } from '../components/Calendar.tsx'
 import { useStreakDays } from '../hooks/useDayRange.ts'
+import { useDocumentTitle } from '../hooks/useDocumentTitle.ts'
 import { useNow } from '../hooks/useNow.ts'
 import { endOfMonthKey, formatKey, startOfMonthKey, todayKey } from '../lib/dates.ts'
 import { monthParam, resolveMonthParam, shiftMonth, summarizeMonth } from '../lib/history.ts'
@@ -9,6 +10,7 @@ import { useSession } from '../lib/session.ts'
 import type { DateKey } from '../lib/types.ts'
 
 export default function History() {
+  useDocumentTitle('History')
   const { settings, trackerId } = useSession()
   const now = useNow()
   const today = todayKey(settings.timezone, now)
@@ -66,7 +68,7 @@ export default function History() {
             <button
               type="button"
               onClick={() => goTo(currentMonth)}
-              className="min-h-9 rounded-full bg-brand-600 px-4 text-sm font-semibold text-white shadow-sm hover:bg-brand-700"
+              className="min-h-11 rounded-full bg-brand-700 px-4 text-sm font-semibold text-white shadow-sm hover:bg-brand-800"
             >
               Back to this month
             </button>
@@ -105,7 +107,11 @@ export default function History() {
               <dd className="text-2xl font-bold tabular-nums text-leaf-700">{summary.fullDays}</dd>
             </div>
           </dl>
-          <p className="text-center text-xs text-stone-500">Tap a day to open it.</p>
+          <p className="text-center text-sm text-stone-600">
+            {loaded && !summary.cells.some((c) => c.mealsDone > 0)
+              ? `No meals logged in ${formatKey(month, 'MMMM')}${isCurrent ? ' yet' : ''}.`
+              : 'Tap a day to open it.'}
+          </p>
         </>
       )}
     </section>

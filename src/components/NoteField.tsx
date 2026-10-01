@@ -61,7 +61,7 @@ export default function NoteField({ value, canEdit, onSave }: Props) {
         onKeyDown={(e) => {
           if (e.key === 'Enter') e.currentTarget.blur()
         }}
-        className="min-h-12 w-full rounded-2xl bg-white px-4 text-stone-800 ring-1 ring-brand-100 placeholder:text-stone-400 focus:ring-2 focus:ring-brand-500 focus:outline-none"
+        className="min-h-12 w-full rounded-2xl bg-white px-4 text-stone-800 ring-1 ring-brand-100 placeholder:text-stone-500 focus:ring-2 focus:ring-brand-500 focus:outline-none"
       />
     </label>
   )

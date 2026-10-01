@@ -26,7 +26,7 @@ export default function Celebration({ onDone }: { onDone: () => void }) {
       })}
       <span
         onAnimationEnd={onDone}
-        className="celebrate-badge absolute top-2 left-1/2 rounded-full bg-leaf-600 px-4 py-1 text-sm font-bold whitespace-nowrap text-white shadow-md"
+        className="celebrate-badge fixed top-[calc(env(safe-area-inset-top)+4.5rem)] left-1/2 z-30 rounded-full bg-leaf-700 px-4 py-1 text-sm font-bold whitespace-nowrap text-white shadow-md"
       >
         Full day! 🎉
       </span>

@@ -88,7 +88,7 @@ export default function DateSwitcher({ selected, today, onChange }: Props) {
           <button
             type="button"
             onClick={() => onChange(today)}
-            className="min-h-9 rounded-full bg-brand-600 px-4 text-sm font-semibold text-white shadow-sm hover:bg-brand-700"
+            className="min-h-11 rounded-full bg-brand-700 px-4 text-sm font-semibold text-white shadow-sm hover:bg-brand-800"
           >
             Back to today
           </button>

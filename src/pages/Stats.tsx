@@ -1,9 +1,10 @@
 import { useMemo, type ReactNode } from 'react'
 import BarChart from '../components/BarChart.tsx'
 import { useStreakDays } from '../hooks/useDayRange.ts'
+import { useDocumentTitle } from '../hooks/useDocumentTitle.ts'
 import { useNow } from '../hooks/useNow.ts'
 import { formatKey, todayKey } from '../lib/dates.ts'
-import { maxDailyScore } from '../lib/scoring.ts'
+import { maxDailyScore, mealsDone } from '../lib/scoring.ts'
 import { useSession } from '../lib/session.ts'
 import { CHART_DAYS, computeStats } from '../lib/stats.ts'
 
@@ -20,7 +21,8 @@ const oneDecimal = (n: number) => String(Math.round(n * 10) / 10)
 const days = (n: number) => `${n} ${n === 1 ? 'day' : 'days'}`
 
 export default function Stats() {
-  const { settings, trackerId, canEdit } = useSession()
+  useDocumentTitle('Stats')
+  const { settings, tracker, trackerId, canEdit } = useSession()
   const now = useNow()
   const today = todayKey(settings.timezone, now)
   const range = useStreakDays(trackerId, today)
@@ -29,18 +31,60 @@ export default function Stats() {
     [range.days, settings, today, range.from],
   )
   const { currentStreak: streak, week, mostMissed } = stats
+  const loggedDays = Object.values(range.days).filter(
+    (d) => mealsDone(d) > 0 || (d?.snacks ?? 0) > 0,
+  )
+  const firstLoad = !range.loaded && Object.keys(range.days).length === 0
+  const title = <h1 className="text-xl font-bold text-stone-900">Stats</h1>
 
   if (range.error) {
     return (
-      <p role="alert" className="rounded-2xl bg-red-50 px-4 py-3 text-sm text-red-800">
-        Couldn't load stats: {range.error}
-      </p>
+      <div className="flex flex-col gap-3">
+        {title}
+        <p role="alert" className="rounded-2xl bg-red-50 px-4 py-3 text-sm text-red-800">
+          Couldn't load stats: {range.error}
+        </p>
+      </div>
+    )
+  }
+
+  if (firstLoad) {
+    return (
+      <div className="flex flex-col gap-3" aria-busy="true">
+        {title}
+        <p className="sr-only" role="status">
+          Loading stats…
+        </p>
+        {[24, 28, 56, 16].map((h, i) => (
+          <div
+            key={i}
+            aria-hidden="true"
+            className="animate-pulse rounded-2xl bg-white ring-1 ring-brand-100"
+            style={{ height: `${h * 4}px` }}
+          />
+        ))}
+      </div>
+    )
+  }
+
+  if (range.loaded && loggedDays.length === 0) {
+    return (
+      <div className="flex flex-col gap-3">
+        {title}
+        <Card title="No stats yet">
+          <p className="mt-1 text-stone-700">
+            {canEdit
+              ? 'No meals logged yet — log your first meal on Today and your stats start here.'
+              : `No meals logged yet — stats appear once ${tracker.writerName} logs her first meal.`}
+          </p>
+        </Card>
+      </div>
     )
   }
 
   return (
     <div className="flex flex-col gap-3" aria-busy={!range.loaded}>
-      <h1 className="text-xl font-bold text-stone-900">Stats</h1>
+      {title}
 
       <div className="grid grid-cols-2 gap-3">
         <Card title="Current streak">
