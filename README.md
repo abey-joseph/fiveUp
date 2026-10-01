@@ -47,7 +47,8 @@ tracker document; `scripts/import-days.ts` imports past days from a CSV.
 5. **Authorised domains** (Authentication → Settings) must include every domain you open the app
    on. `localhost`, `*.web.app` and `*.firebaseapp.com` for your project are there by default.
 6. **Create the tracker document** — follow [`scripts/seed-tracker.md`](scripts/seed-tracker.md).
-7. Put your project ID in [`.firebaserc`](.firebaserc) (replace `your-firebase-project-id`).
+7. [`.firebaserc`](.firebaserc) holds the project ID (`fiveup-234e0`); change it to deploy to another
+   project.
 
 ### Roles
 
@@ -123,4 +124,26 @@ and `FIREBASE_SERVICE_ACCOUNT` unset.
 
 ## Deploy
 
-_TODO (stage 9)._
+The app is served by Firebase Hosting at <https://fiveup-234e0.web.app> (also
+`fiveup-234e0.firebaseapp.com`). A deploy publishes the built app and the Firestore security
+rules together — never deploy the app without the rules, or it can't read any data.
+
+```bash
+npm run lint && npm run format:check && npm test && npm run test:rules
+npm run build                       # uses .env.local — must be the real project's config
+npx firebase deploy --only hosting,firestore:rules
+```
+
+**Who can deploy:**
+
+- **From your computer:** `npx firebase login` with a Google account that owns the project.
+- **With a service account** (e.g. a cloud environment): point `GOOGLE_APPLICATION_CREDENTIALS`
+  at the key file. Besides what the Firebase Admin SDK account has by default, it needs the IAM
+  roles **Service Usage Consumer** (the CLI checks the APIs are enabled) and **Firebase Rules
+  Admin** (to test and release `firestore.rules`). New roles can take a few minutes to apply.
+
+**After deploying:** open the site, sign in with Google and check you land on Today (tracker)
+or the read-only view (viewer). Installed PWAs pick up the new version the next time they're
+opened — the service worker updates in the background.
+
+Spark plan only: Hosting, Auth and Firestore. No Cloud Functions or Cloud Storage are used.
