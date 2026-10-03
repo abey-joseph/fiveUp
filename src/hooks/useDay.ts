@@ -4,11 +4,17 @@ import { dayFromData, dayToData } from '../lib/dayDoc.ts'
 import { dayRef } from '../lib/dayRefs.ts'
 import { emptyDay } from '../lib/defaultSettings.ts'
 import type { DateKey, DayDoc } from '../lib/types.ts'
+import { CACHE_FALLBACK_MS } from './useDayRange.ts'
 
 export interface DayState {
   /** The day's data (undefined = no document yet). Includes optimistic local changes. */
   day: DayDoc | undefined
   loaded: boolean
+  /**
+   * True when the device looks online but the server hasn't confirmed this day within a few
+   * seconds, so the app is working from the local copy (changes sync once it reconnects).
+   */
+  unconfirmed: boolean
   /** Applies an update instantly and writes the whole day doc to Firestore. */
   update: (fn: (day: DayDoc) => DayDoc) => void
 }
@@ -29,6 +35,8 @@ export function useDay(
 ): DayState {
   const [snap, setSnap] = useState<Snap | null>(null)
   const [optimistic, setOptimistic] = useState<Snap | null>(null)
+  // Key whose server confirmation timed out (see `unconfirmed`).
+  const [unconfirmedKey, setUnconfirmedKey] = useState<DateKey | null>(null)
   // Latest known value for this key, so rapid taps build on each other.
   const latest = useRef<{ key: DateKey; day: DayDoc | undefined } | null>(null)
   const onErrorRef = useRef(onError)
@@ -38,20 +46,39 @@ export function useDay(
 
   useEffect(() => {
     latest.current = null
-    return onSnapshot(
+    let timer: ReturnType<typeof setTimeout> | undefined
+    const accept = (day: DayDoc | undefined) => {
+      latest.current = { key, day }
+      setSnap({ key, day })
+      setOptimistic(null)
+    }
+    const unsubscribe = onSnapshot(
       dayRef(trackerId, key),
       { includeMetadataChanges: true },
       (s) => {
-        // A cache-only "doesn't exist" while online may just mean this device hasn't seen the
-        // day yet; wait for the server so a tap can't overwrite data stored there.
-        if (s.metadata.fromCache && !s.exists() && navigator.onLine) return
+        clearTimeout(timer)
         const day = s.exists() ? dayFromData(s.data({ serverTimestamps: 'estimate' })) : undefined
-        latest.current = { key, day }
-        setSnap({ key, day })
-        setOptimistic(null)
+        if (s.metadata.fromCache && navigator.onLine) {
+          // Online but this is only the local copy. A cache-only "doesn't exist" may just mean
+          // this device hasn't seen the day yet, so wait for the server before accepting it (a
+          // tap could otherwise overwrite data stored there) — but not forever: on a connection
+          // that looks online yet can't reach the server, fall back to the cache as if offline.
+          timer = setTimeout(() => {
+            if (!day) accept(undefined)
+            setUnconfirmedKey(key)
+          }, CACHE_FALLBACK_MS)
+          if (!day) return
+        } else {
+          setUnconfirmedKey((k) => (k === key ? null : k))
+        }
+        accept(day)
       },
       (err) => onErrorRef.current(`Couldn't load this day: ${err.message}`),
     )
+    return () => {
+      clearTimeout(timer)
+      unsubscribe()
+    }
   }, [trackerId, key])
 
   const update = useCallback(
@@ -78,5 +105,5 @@ export function useDay(
 
   const loaded = snap?.key === key
   const day = optimistic?.key === key ? optimistic.day : snap?.key === key ? snap.day : undefined
-  return { day, loaded, update }
+  return { day, loaded, unconfirmed: unconfirmedKey === key, update }
 }

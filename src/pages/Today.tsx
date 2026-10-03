@@ -6,11 +6,13 @@ import MealTile from '../components/MealTile.tsx'
 import NoteField from '../components/NoteField.tsx'
 import ScoreRing from '../components/ScoreRing.tsx'
 import SnackCounter from '../components/SnackCounter.tsx'
+import TipCard from '../components/TipCard.tsx'
 import Toast, { type ToastData } from '../components/Toast.tsx'
 import { useDay } from '../hooks/useDay.ts'
 import { useDocumentTitle } from '../hooks/useDocumentTitle.ts'
 import { useStreakDays } from '../hooks/useDayRange.ts'
 import { useNow } from '../hooks/useNow.ts'
+import { useOnline } from '../hooks/useOnline.ts'
 import {
   formatDateTimeInTz,
   formatKey,
@@ -41,6 +43,7 @@ export default function Today() {
   const { settings, tracker, trackerId, canEdit } = useSession()
   const tz = settings.timezone
   const now = useNow()
+  const online = useOnline()
   const today = todayKey(tz, now)
   const [params, setParams] = useSearchParams()
   const selected = resolveSelected(params.get('date'), today)
@@ -54,7 +57,7 @@ export default function Today() {
     [],
   )
 
-  const { day: stored, loaded, update } = useDay(trackerId, selected, showError)
+  const { day: stored, loaded, unconfirmed, update } = useDay(trackerId, selected, showError)
   const { days: rangeDays } = useStreakDays(trackerId, selected)
   const day = stored ?? emptyDay()
 
@@ -106,10 +109,22 @@ export default function Today() {
         </div>
       )}
 
+      {/* Offline proper is covered by OfflineBanner; this is "online" but the server won't answer. */}
+      {unconfirmed && online && (
+        <p
+          role="status"
+          className="rounded-2xl bg-stone-800 px-4 py-2 text-center text-sm text-white"
+        >
+          {canEdit
+            ? "Can't reach the server right now. Changes are saved on this phone and sync when it reconnects."
+            : "Can't reach the server right now. Showing the last synced data."}
+        </p>
+      )}
+
       <DateSwitcher selected={selected} today={today} onChange={goTo} />
 
       <div className="relative">
-        <ScoreRing score={score} max={max} full={full} />
+        <ScoreRing score={score} max={max} full={full} aside={<TipCard />} />
         {celebration > 0 && <Celebration key={celebration} onDone={() => setCelebration(0)} />}
       </div>
 

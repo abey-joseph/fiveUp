@@ -1,9 +1,10 @@
 # FiveUp — v1 Build Spec
 
 > **This file is the single source of truth for FiveUp v1.** Any change request is applied here
-> first, then implemented. Current revision: **v1 + Change Request 3** (CR1: tracker timezone,
+> first, then implemented. Current revision: **v1 + Change Request 4** (CR1: tracker timezone,
 > one-time backfill importer; CR2: snack bonus at 3 snacks; CR3: snack bonus raised from +1 to +5,
-> so snacks max out at 14 and the max daily score is 79).
+> so snacks max out at 14 and the max daily score is 79; CR4: random weight-gain tip beside the
+> score ring on Today).
 
 You are building **FiveUp**, a small meal-tracking web app (PWA) for two people. Read this whole
 spec before writing code. Work in the stages listed under "Build order", commit after each stage,
@@ -223,6 +224,10 @@ encouraging tone. Bottom tab bar: **Today · History · Stats**.
   History can link to a day; invalid or future dates fall back to today.
 - **Score ring:** the day's total score out of 79 (`maxDailyScore(settings)`), with the breakdown
   underneath (meals / snacks / bonus / streak bonus).
+- **Tip box:** in the same row as the score ring (to its right), a small box with one short
+  weight-gain tip (a few words, e.g. "Add a spoon of peanut butter."). Tips are a fixed list in
+  `src/lib/tips.ts` (100+ tips); one is picked at random each time the Today screen opens and stays
+  the same while switching dates. Shown to both writer and viewer.
 - **5 meal tiles** in fixed order. Tap to toggle done. Done tiles show a check and the logged time
   in the tracker timezone (e.g. "✓ 8:42 am"); if `at` is `null`, show just "✓". Show a small toast
   with "Undo" after each toggle.
@@ -282,6 +287,7 @@ src/
     dates.test.ts
     defaultSettings.ts
     meals.ts             // single meal-definition config array
+    tips.ts              // weight-gain tips + random pick
     types.ts
   hooks/
     useAuth.ts
@@ -296,6 +302,7 @@ src/
     NoAccess.tsx
   components/
     ScoreRing.tsx
+    TipCard.tsx
     MealTile.tsx
     SnackCounter.tsx
     Calendar.tsx
