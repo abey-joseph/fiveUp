@@ -6,6 +6,7 @@ import MealTile from '../components/MealTile.tsx'
 import NoteField from '../components/NoteField.tsx'
 import ScoreRing from '../components/ScoreRing.tsx'
 import SnackCounter from '../components/SnackCounter.tsx'
+import TipCard from '../components/TipCard.tsx'
 import Toast, { type ToastData } from '../components/Toast.tsx'
 import { useDay } from '../hooks/useDay.ts'
 import { useDocumentTitle } from '../hooks/useDocumentTitle.ts'
@@ -123,7 +124,7 @@ export default function Today() {
       <DateSwitcher selected={selected} today={today} onChange={goTo} />
 
       <div className="relative">
-        <ScoreRing score={score} max={max} full={full} />
+        <ScoreRing score={score} max={max} full={full} aside={<TipCard />} />
         {celebration > 0 && <Celebration key={celebration} onDone={() => setCelebration(0)} />}
       </div>
 
