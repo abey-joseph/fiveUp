@@ -1,8 +1,12 @@
 import { initializeApp, type FirebaseApp } from 'firebase/app'
 import {
   GoogleAuthProvider,
+  browserLocalPersistence,
+  browserPopupRedirectResolver,
+  browserSessionPersistence,
   connectAuthEmulator,
-  getAuth,
+  indexedDBLocalPersistence,
+  initializeAuth,
   signInWithCredential,
   type Auth,
 } from 'firebase/auth'
@@ -32,13 +36,40 @@ const useEmulators = env.VITE_USE_FIREBASE_EMULATORS === 'true'
 /** False when `.env.local` hasn't been filled in; the app shows setup instructions instead. */
 export const firebaseConfigured = Boolean(config.apiKey && config.projectId && config.appId)
 
+/** Remembers on this device that someone is signed in, so startup can skip the sign-in preload. */
+const SIGNED_IN_HINT_KEY = 'fiveup:signed-in'
+
+function hasSignedInHint(): boolean {
+  try {
+    return localStorage.getItem(SIGNED_IN_HINT_KEY) === '1'
+  } catch {
+    return false
+  }
+}
+
+export function setSignedInHint(signedIn: boolean) {
+  try {
+    if (signedIn) localStorage.setItem(SIGNED_IN_HINT_KEY, '1')
+    else localStorage.removeItem(SIGNED_IN_HINT_KEY)
+  } catch {
+    // Storage blocked: every launch just preloads the sign-in helper.
+  }
+}
+
 let app: FirebaseApp | undefined
 let auth: Auth | undefined
 let db: Firestore | undefined
 
 if (firebaseConfigured) {
   app = initializeApp(config)
-  auth = getAuth(app)
+  // Like getAuth(), but with the popup/redirect resolver only when signed out. With it, mobile
+  // browsers load Google's sign-in iframe and scripts on every launch before reporting the saved
+  // user (up to 30 s on a slow connection). Signed out, that preload is what lets the sign-in
+  // popup open straight from the tap; useAuth passes the resolver to the sign-in calls either way.
+  auth = initializeAuth(app, {
+    persistence: [indexedDBLocalPersistence, browserLocalPersistence, browserSessionPersistence],
+    ...(hasSignedInHint() ? {} : { popupRedirectResolver: browserPopupRedirectResolver }),
+  })
   // Offline persistence: reads come from the local cache when offline and writes are queued.
   db = initializeFirestore(app, {
     localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() }),

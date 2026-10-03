@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import {
   GoogleAuthProvider,
+  browserPopupRedirectResolver,
   getRedirectResult,
   onAuthStateChanged,
   signInWithPopup,
@@ -8,7 +9,7 @@ import {
   signOut as fbSignOut,
   type User,
 } from 'firebase/auth'
-import { getFirebaseAuth } from '../lib/firebase.ts'
+import { getFirebaseAuth, setSignedInHint } from '../lib/firebase.ts'
 
 export interface AuthState {
   user: User | null
@@ -24,6 +25,29 @@ const POPUP_FALLBACK_CODES = new Set([
   'auth/operation-not-supported-in-this-environment',
   'auth/web-storage-unsupported',
 ])
+
+/**
+ * Set while a signInWithRedirect round-trip is in flight, so the redirect result (which loads
+ * Google's sign-in iframe) is only checked when there can be one.
+ */
+const REDIRECT_PENDING_KEY = 'fiveup:redirect-pending'
+
+function readFlag(): boolean {
+  try {
+    return sessionStorage.getItem(REDIRECT_PENDING_KEY) === '1'
+  } catch {
+    return false
+  }
+}
+
+function writeFlag(on: boolean) {
+  try {
+    if (on) sessionStorage.setItem(REDIRECT_PENDING_KEY, '1')
+    else sessionStorage.removeItem(REDIRECT_PENDING_KEY)
+  } catch {
+    // Storage blocked: the redirect result just won't be checked.
+  }
+}
 
 /** Errors that just mean the user closed the popup — not worth showing. */
 const SILENT_CODES = new Set(['auth/popup-closed-by-user', 'auth/cancelled-popup-request'])
@@ -46,11 +70,22 @@ export function useAuth(): AuthState {
 
   useEffect(() => {
     const auth = getFirebaseAuth()
-    // Surfaces errors from a previous signInWithRedirect round-trip.
-    getRedirectResult(auth).catch((e: unknown) => setError(friendlyError(e)))
+    // Completes a signInWithRedirect round-trip (and surfaces its errors). Until it settles the
+    // user may still be null, so keep showing the splash rather than flashing the sign-in screen.
+    let redirectPending = readFlag()
+    if (redirectPending) {
+      writeFlag(false)
+      getRedirectResult(auth, browserPopupRedirectResolver)
+        .catch((e: unknown) => setError(friendlyError(e)))
+        .finally(() => {
+          redirectPending = false
+          setLoading(false)
+        })
+    }
     return onAuthStateChanged(auth, (u) => {
       setUser(u)
-      setLoading(false)
+      if (u || !redirectPending) setLoading(false)
+      setSignedInHint(u !== null)
     })
   }, [])
 
@@ -60,11 +95,12 @@ export function useAuth(): AuthState {
     const provider = new GoogleAuthProvider()
     provider.setCustomParameters({ prompt: 'select_account' })
     try {
-      await signInWithPopup(auth, provider)
+      await signInWithPopup(auth, provider, browserPopupRedirectResolver)
     } catch (e) {
       const code = errorCode(e)
       if (POPUP_FALLBACK_CODES.has(code)) {
-        await signInWithRedirect(auth, provider)
+        writeFlag(true)
+        await signInWithRedirect(auth, provider, browserPopupRedirectResolver)
         return
       }
       if (!SILENT_CODES.has(code)) setError(friendlyError(e))
