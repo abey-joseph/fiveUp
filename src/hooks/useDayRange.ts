@@ -13,7 +13,7 @@ export interface DayRangeState {
 }
 
 /** How long to wait for the server before accepting a cache-only result. */
-const CACHE_FALLBACK_MS = 5000
+export const CACHE_FALLBACK_MS = 5000
 
 const EMPTY: DayMap = Object.freeze({}) as DayMap
 
