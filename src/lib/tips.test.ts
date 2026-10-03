@@ -14,7 +14,7 @@ describe('pickTip', () => {
 
 describe('WEIGHT_GAIN_TIPS', () => {
   it('has plenty of tips, all short and unique', () => {
-    expect(WEIGHT_GAIN_TIPS.length).toBeGreaterThanOrEqual(30)
+    expect(WEIGHT_GAIN_TIPS.length).toBeGreaterThanOrEqual(100)
     expect(new Set(WEIGHT_GAIN_TIPS).size).toBe(WEIGHT_GAIN_TIPS.length)
     for (const tip of WEIGHT_GAIN_TIPS) expect(tip.length).toBeLessThanOrEqual(40)
   })

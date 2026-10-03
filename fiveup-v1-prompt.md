@@ -225,7 +225,7 @@ encouraging tone. Bottom tab bar: **Today · History · Stats**.
   underneath (meals / snacks / bonus / streak bonus).
 - **Tip box:** in the same row as the score ring (to its right), a small box with one short
   weight-gain tip (a few words, e.g. "Add a spoon of peanut butter."). Tips are a fixed list in
-  `src/lib/tips.ts` (30+ tips); one is picked at random each time the Today screen opens and stays
+  `src/lib/tips.ts` (100+ tips); one is picked at random each time the Today screen opens and stays
   the same while switching dates. Shown to both writer and viewer.
 - **5 meal tiles** in fixed order. Tap to toggle done. Done tiles show a check and the logged time
   in the tracker timezone (e.g. "✓ 8:42 am"); if `at` is `null`, show just "✓". Show a small toast
